@@ -7,6 +7,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import mongoDBInstance from "./dbs/init.mongodb";
+import router from "./routes";
 
 // init app
 const app = express();
@@ -20,5 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // init database
 mongoDBInstance;
+
+// init routes
+app.use("/", router);
 
 export default app;

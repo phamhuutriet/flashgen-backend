@@ -6,7 +6,7 @@
   "author": "phamhuutriet <triet.ph1999@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start-server": "ts-node server.ts"
+    "start-server": "ts-node-dev --respawn server.ts"
   },
   "dependencies": {
     "@types/compression": "^1.7.3",
