@@ -1,9 +1,14 @@
+// Dot env have to start before any module can consume env vars
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import mongoDBInstance from "./dbs/init.mongodb";
 
+// init app
 const app = express();
 
 // middleware

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
+import config from "../config/mongodb.config";
 
-const HOST = "127.0.0.1";
-const NAME = "flashgenBackendMongoDB";
-const PORT = 27018;
-const mongoURL = `mongodb://${HOST}:${PORT}/${NAME}`;
-
+const {
+  db: { host, name, port },
+} = config;
+const mongoURL = `mongodb://${host}:${port}/${name}`;
 console.log(`Connect string: ${mongoURL}`);
 
 class Database {
