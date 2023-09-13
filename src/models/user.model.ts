@@ -29,4 +29,4 @@ var userSchema = new mongoose.Schema(
 );
 
 //Export the model
-module.exports = mongoose.model(DOCUMENT_NAME, userSchema);
+export default mongoose.model(DOCUMENT_NAME, userSchema);

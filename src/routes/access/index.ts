@@ -1,4 +1,5 @@
 import express from "express";
+import { preSignUp } from "../../controllers/access.controller";
 
 const accessRouter = express.Router();
 
@@ -7,5 +8,7 @@ accessRouter.get("/", (req, res, next) => {
     message: "Access GET method executed !",
   });
 });
+
+accessRouter.post("/user/signup", preSignUp);
 
 export default accessRouter;
