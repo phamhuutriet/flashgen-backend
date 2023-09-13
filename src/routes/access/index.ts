@@ -1,5 +1,5 @@
 import express from "express";
-import { preSignUp } from "../../controllers/access.controller";
+import { postSignUp, preSignUp } from "../../controllers/access.controller";
 
 const accessRouter = express.Router();
 
@@ -10,5 +10,6 @@ accessRouter.get("/", (req, res, next) => {
 });
 
 accessRouter.post("/user/signup", preSignUp);
+accessRouter.get("/user/signup/verify-email", postSignUp);
 
 export default accessRouter;

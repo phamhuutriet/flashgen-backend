@@ -1,7 +1,12 @@
 import { createTransport } from "nodemailer";
 import { getRedisClient } from "../dbs/init.redis";
 import userModel from "../models/user.model";
-import crypto from "crypto";
+import { createPublicKey, generateKeyPairSync, randomBytes } from "crypto";
+import { hash } from "bcrypt";
+import { createPublicKeyString, formatResult } from "./utils";
+import { createTokenPair } from "../auth/authUtils";
+
+const RedisCacheTTL = 120;
 
 interface PreSignUpProps {
   username: string;
@@ -25,9 +30,9 @@ export const preSignUpService = async ({
 
   // step 2: store sign up data in cache
   const redisClient = await getRedisClient();
-  const signUpToken = crypto.randomBytes(32).toString("hex");
+  const signUpToken = randomBytes(32).toString("hex");
   const serializedData = JSON.stringify({ username, email, password });
-  redisClient.set(signUpToken, serializedData, { EX: 30 });
+  redisClient.set(signUpToken, serializedData, { EX: RedisCacheTTL });
 
   // step 3: send verification email
   await sendVerificationEmail(signUpToken, email);
@@ -40,7 +45,6 @@ export const preSignUpService = async ({
 
 const sendVerificationEmail = async (signUpToken: string, email: string) => {
   // Create a transporter object using SMTP transport
-  console.log(process.env.EMAIL, process.env.EMAIL_PASSWORD);
   const transporter = createTransport({
     service: "Gmail", // Use your email service provider here
     auth: {
@@ -48,13 +52,13 @@ const sendVerificationEmail = async (signUpToken: string, email: string) => {
       pass: process.env.EMAIL_PASSWORD,
     },
   });
-
+  console.log(process.env.HOST);
   // Define email data
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "BACKEND SERVICE EMAIL VERIFICATION",
-    text: `Email verification link: http://localhost:3052/v1/api/shop/signup/confirm-signup-email?signUpToken=${signUpToken}`,
+    text: `Email verification link: http://${process.env.HOST}:${process.env.PORT}/v1/api/user/signup/verify-email?signUpToken=${signUpToken}`,
   };
 
   // Send the email
@@ -65,4 +69,76 @@ const sendVerificationEmail = async (signUpToken: string, email: string) => {
       console.log("Email sent: " + info.response);
     }
   });
+};
+
+export const postSignUpService = async ({
+  signUpToken,
+}: {
+  signUpToken: string;
+}) => {
+  try {
+    // step1: Retrieve sign up info
+    const redisClient = await getRedisClient();
+    const serializedData = await redisClient.get(signUpToken);
+
+    if (!serializedData) {
+      return {
+        code: "xxx",
+        message: "Verification link expired",
+      };
+    }
+
+    const { username, email, password } = JSON.parse(serializedData);
+    const passwordHash = await hash(password, 10);
+    const newUser = await userModel.create({
+      username,
+      email,
+      password: passwordHash,
+    });
+
+    if (!newUser) {
+      return {
+        code: "xxx",
+        message: "Error creating new user",
+      };
+    }
+
+    // step 2: generate access token and refresh token
+    const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+      modulusLength: 4096,
+      // This helps decoded back to string form to store in key token schema
+      publicKeyEncoding: {
+        type: "pkcs1",
+        format: "pem",
+      },
+      privateKeyEncoding: {
+        type: "pkcs1",
+        format: "pem",
+      },
+    });
+
+    const publicKeyString = (await createPublicKeyString(
+      newUser._id,
+      publicKey
+    )) as string;
+    const publicKeyObject = createPublicKey(publicKeyString);
+    const tokens = createTokenPair(
+      { userId: newUser._id, username: newUser.username },
+      publicKeyObject,
+      privateKey
+    );
+
+    return {
+      code: "xxx",
+      metadata: {
+        user: formatResult(["_id", "username", "email"], newUser),
+        tokens,
+      },
+    };
+  } catch (error) {
+    return {
+      code: "xxx",
+      message: `Error: ${error}`,
+    };
+  }
 };
