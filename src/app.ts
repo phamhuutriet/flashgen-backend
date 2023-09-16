@@ -8,6 +8,7 @@ import helmet from "helmet";
 import compression from "compression";
 import mongoDBInstance from "./dbs/init.mongodb";
 import router from "./routes";
+import { ErrorResponse } from "./core/error.response";
 
 // init app
 const app = express();
@@ -24,5 +25,26 @@ mongoDBInstance;
 
 // init routes
 app.use("/", router);
+
+app.use((req, res, next) => {
+  const error = new ErrorResponse("Not found", 404);
+  next(error);
+});
+
+app.use(
+  (
+    error: ErrorResponse,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const statusCode = error.status || 500;
+    return res.status(statusCode).json({
+      status: "error",
+      code: statusCode,
+      message: error.message || "Internal error",
+    });
+  }
+);
 
 export default app;

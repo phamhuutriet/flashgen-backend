@@ -5,6 +5,7 @@ import { createPublicKey, generateKeyPairSync, randomBytes } from "crypto";
 import { hash } from "bcrypt";
 import { createPublicKeyString, formatResult } from "./utils";
 import { createTokenPair } from "../auth/authUtils";
+import { ConflictErrorResponse } from "../core/error.response";
 
 const RedisCacheTTL = 120;
 
@@ -22,10 +23,7 @@ export const preSignUpService = async ({
   // step 1: check if username existed
   const holderUser = await userModel.findOne({ username });
   if (holderUser) {
-    return {
-      code: "xxx",
-      message: "Username is already existed",
-    };
+    throw new ConflictErrorResponse("Error: username is already existed");
   }
 
   // step 2: store sign up data in cache
@@ -76,69 +74,56 @@ export const postSignUpService = async ({
 }: {
   signUpToken: string;
 }) => {
-  try {
-    // step1: Retrieve sign up info
-    const redisClient = await getRedisClient();
-    const serializedData = await redisClient.get(signUpToken);
+  // step1: Retrieve sign up info
+  const redisClient = await getRedisClient();
+  const serializedData = await redisClient.get(signUpToken);
 
-    if (!serializedData) {
-      return {
-        code: "xxx",
-        message: "Verification link expired",
-      };
-    }
-
-    const { username, email, password } = JSON.parse(serializedData);
-    const passwordHash = await hash(password, 10);
-    const newUser = await userModel.create({
-      username,
-      email,
-      password: passwordHash,
-    });
-
-    if (!newUser) {
-      return {
-        code: "xxx",
-        message: "Error creating new user",
-      };
-    }
-
-    // step 2: generate access token and refresh token
-    const { publicKey, privateKey } = generateKeyPairSync("rsa", {
-      modulusLength: 4096,
-      // This helps decoded back to string form to store in key token schema
-      publicKeyEncoding: {
-        type: "pkcs1",
-        format: "pem",
-      },
-      privateKeyEncoding: {
-        type: "pkcs1",
-        format: "pem",
-      },
-    });
-
-    const publicKeyString = (await createPublicKeyString(
-      newUser._id,
-      publicKey
-    )) as string;
-    const publicKeyObject = createPublicKey(publicKeyString);
-    const tokens = createTokenPair(
-      { userId: newUser._id, username: newUser.username },
-      publicKeyObject,
-      privateKey
-    );
-
-    return {
-      code: "xxx",
-      metadata: {
-        user: formatResult(["_id", "username", "email"], newUser),
-        tokens,
-      },
-    };
-  } catch (error) {
-    return {
-      code: "xxx",
-      message: `Error: ${error}`,
-    };
+  if (!serializedData) {
+    throw new ConflictErrorResponse("Error: verification link expired");
   }
+
+  const { username, email, password } = JSON.parse(serializedData);
+  const passwordHash = await hash(password, 10);
+  const newUser = await userModel.create({
+    username,
+    email,
+    password: passwordHash,
+  });
+
+  if (!newUser) {
+    throw new ConflictErrorResponse("Error: new user is already existed");
+  }
+
+  // step 2: generate access token and refresh token
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    modulusLength: 4096,
+    // This helps decoded back to string form to store in key token schema
+    publicKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+  });
+
+  const publicKeyString = (await createPublicKeyString(
+    newUser._id,
+    publicKey
+  )) as string;
+  const publicKeyObject = createPublicKey(publicKeyString);
+  const tokens = createTokenPair(
+    { userId: newUser._id, username: newUser.username },
+    publicKeyObject,
+    privateKey
+  );
+
+  return {
+    code: "xxx",
+    metadata: {
+      user: formatResult(["_id", "username", "email"], newUser),
+      tokens,
+    },
+  };
 };

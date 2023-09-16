@@ -6,16 +6,12 @@ export const createPublicKeyString = async (
   userId: mongoose.Types.ObjectId,
   publicKey: string
 ) => {
-  try {
-    const publicKeyString = publicKey.toString();
-    const token = await tokenModel.create({
-      userId,
-      publicKey: publicKeyString,
-    });
-    return token ? publicKeyString : "";
-  } catch (error) {
-    console.error("Error creating public key string", error);
-  }
+  const publicKeyString = publicKey.toString();
+  const token = await tokenModel.create({
+    userId,
+    publicKey: publicKeyString,
+  });
+  return token ? publicKeyString : "";
 };
 
 export const formatResult = (fields: string[], data: Object) => {
