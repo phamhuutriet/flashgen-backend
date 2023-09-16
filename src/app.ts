@@ -26,11 +26,13 @@ mongoDBInstance;
 // init routes
 app.use("/", router);
 
+// Error handling for non-route hits
 app.use((req, res, next) => {
   const error = new ErrorResponse("Not found", 404);
   next(error);
 });
 
+// Central error handling
 app.use(
   (
     error: ErrorResponse,
