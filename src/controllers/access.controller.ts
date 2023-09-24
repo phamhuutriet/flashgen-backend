@@ -1,5 +1,7 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import {
+  loginService,
+  logoutService,
   postSignUpService,
   preSignUpService,
 } from "../services/access.service";
@@ -17,5 +19,23 @@ export const postSignUp: RequestHandler = async (req, res, next) => {
   return new CreatedResponse({
     message: "Registered successfully !",
     metadata: await postSignUpService({ signUpToken }),
+  }).send(res);
+};
+
+export const login: RequestHandler = async (req, res, next) => {
+  return new CreatedResponse({
+    message: "User returned",
+    metadata: await loginService(req.body),
+  }).send(res);
+};
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return new OKResponse({
+    message: "Log out successfully !",
+    metadata: await logoutService(req.tokenStore),
   }).send(res);
 };

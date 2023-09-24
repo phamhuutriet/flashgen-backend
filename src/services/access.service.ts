@@ -2,10 +2,16 @@ import { createTransport } from "nodemailer";
 import { getRedisClient } from "../dbs/init.redis";
 import userModel from "../models/user.model";
 import { createPublicKey, generateKeyPairSync, randomBytes } from "crypto";
-import { hash } from "bcrypt";
-import { createPublicKeyString, formatResult } from "./utils";
+import { hash, compare } from "bcrypt";
+import { formatResult } from "./utils";
 import { createTokenPair } from "../auth/authUtils";
-import { ConflictErrorResponse } from "../core/error.response";
+import {
+  AuthFailureErrorResponse,
+  BadRequestErrorResponse,
+  ConflictErrorResponse,
+} from "../core/error.response";
+import { findByEmail } from "./shop.service";
+import { createKeyToken, removeByUserId } from "./token.service";
 
 const RedisCacheTTL = 120;
 
@@ -107,17 +113,13 @@ export const postSignUpService = async ({
       format: "pem",
     },
   });
-
-  const publicKeyString = (await createPublicKeyString(
-    newUser._id,
-    publicKey
-  )) as string;
-  const publicKeyObject = createPublicKey(publicKeyString);
+  const publicKeyObject = createPublicKey(publicKey);
   const tokens = createTokenPair(
     { userId: newUser._id, username: newUser.username },
     publicKeyObject,
     privateKey
   );
+  await createKeyToken(newUser._id, publicKey, tokens.refreshToken);
 
   return {
     code: "xxx",
@@ -126,4 +128,70 @@ export const postSignUpService = async ({
       tokens,
     },
   };
+};
+
+type LoginProps = {
+  email: string;
+  password: string;
+  refreshToken: string | null;
+};
+
+/*
+    1. Check email existed
+    2. Compare password
+    3. Create AT and RT and save
+    4. generate tokens
+    5. get data return login
+  */
+
+export const loginService = async ({
+  email,
+  password,
+  refreshToken = null,
+}: LoginProps) => {
+  // Check if email existed
+  const foundUser = await findByEmail(email);
+  if (!foundUser)
+    throw new BadRequestErrorResponse("Error: User not registered");
+
+  // Compare password
+  const match = compare(foundUser.password, password);
+  if (!match) {
+    throw new AuthFailureErrorResponse("Error: password is not match");
+  }
+
+  // Generate public key and private key
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    modulusLength: 4096,
+    // This helps decoded back to string form to store in key token schema
+    publicKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+  });
+
+  const tokens = createTokenPair(
+    { userId: foundUser._id, username: foundUser.username },
+    createPublicKey(publicKey),
+    privateKey
+  );
+
+  await createKeyToken(foundUser._id, publicKey, tokens.refreshToken);
+
+  return {
+    code: "xxx",
+    metadata: {
+      user: formatResult(["_id", "username", "email"], foundUser),
+      tokens,
+    },
+  };
+};
+
+export const logoutService = async (tokenStore: any) => {
+  const delToken = await removeByUserId(tokenStore.userId);
+  return delToken;
 };

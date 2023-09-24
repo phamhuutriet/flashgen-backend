@@ -1,12 +1,5 @@
-enum ErrorStatusCode {
-  FORBIDEN = 404,
-  CONFLICT = 409,
-}
-
-enum ErrorMessage {
-  FORBIDEN = "Bad request",
-  CONFLICT = "Request denied",
-}
+import * as ReasonPhrases from "../services/utils/reasonPhrases";
+import * as StatusCodes from "../services/utils/statusCodes";
 
 export class ErrorResponse extends Error {
   status: number;
@@ -19,8 +12,8 @@ export class ErrorResponse extends Error {
 
 export class ConflictErrorResponse extends ErrorResponse {
   constructor(
-    message: string = ErrorMessage.CONFLICT,
-    status: number = ErrorStatusCode.CONFLICT
+    message: string = ReasonPhrases.CONFLICT,
+    status: number = StatusCodes.CONFLICT
   ) {
     super(message, status);
   }
@@ -28,8 +21,26 @@ export class ConflictErrorResponse extends ErrorResponse {
 
 export class BadRequestErrorResponse extends ErrorResponse {
   constructor(
-    message: string = ErrorMessage.FORBIDEN,
-    status: number = ErrorStatusCode.FORBIDEN
+    message: string = ReasonPhrases.FORBIDDEN,
+    status: number = StatusCodes.FORBIDDEN
+  ) {
+    super(message, status);
+  }
+}
+
+export class AuthFailureErrorResponse extends ErrorResponse {
+  constructor(
+    message: string = ReasonPhrases.UNAUTHORIZED,
+    status: number = StatusCodes.UNAUTHORIZED
+  ) {
+    super(message, status);
+  }
+}
+
+export class NotFoundErrorResponse extends ErrorResponse {
+  constructor(
+    message: string = ReasonPhrases.NOT_FOUND,
+    status: number = StatusCodes.NOT_FOUND
   ) {
     super(message, status);
   }

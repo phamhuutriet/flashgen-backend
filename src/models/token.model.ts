@@ -16,6 +16,14 @@ var tokenSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    usedRefreshTokens: {
+      type: Array,
+      default: [],
+    },
+    refreshToken: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

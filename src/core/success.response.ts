@@ -14,14 +14,14 @@ type SuccessResponseProps = {
   message: string;
   status?: StatusCode;
   reason?: StatusCodeReason;
-  metadata: Object;
+  metadata: any;
 };
 
 class SuccessResponse {
   message: string;
   status: StatusCode;
   reason: StatusCodeReason;
-  metadata: Object;
+  metadata: any;
 
   constructor({
     message,
