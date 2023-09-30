@@ -8,6 +8,7 @@ import {
 } from "../../controllers/access.controller";
 import { asyncHandler } from "../../auth/checkAuth";
 import { authentication } from "../../auth/authUtils";
+import businessLogicRouter from "../businessLogic";
 
 const accessRouter = express.Router();
 
@@ -24,8 +25,11 @@ accessRouter.get("/user/login", asyncHandler(login));
 // AUTHENTICATION - have to pass this in order to access services
 accessRouter.use(authentication);
 
-// APIs
+// ACCESS APIs
 accessRouter.get("/user/logout", asyncHandler(logout));
 accessRouter.get("/user/handleRefreshToken", asyncHandler(handleRefreshToken));
+
+// BUSINESS LOGIC APIs
+accessRouter.use(businessLogicRouter);
 
 export default accessRouter;
