@@ -4,14 +4,21 @@ import userModel from "../models/user.model";
 import { createPublicKey, generateKeyPairSync, randomBytes } from "crypto";
 import { hash, compare } from "bcrypt";
 import { formatResult } from "./utils";
-import { createTokenPair } from "../auth/authUtils";
+import { createTokenPair, verifyJWT } from "../auth/authUtils";
 import {
   AuthFailureErrorResponse,
   BadRequestErrorResponse,
   ConflictErrorResponse,
+  ForbiddenErrorResponse,
 } from "../core/error.response";
-import { findByEmail } from "./shop.service";
-import { createKeyToken, removeByUserId } from "./token.service";
+import { findByEmail, findByUsername } from "./user.service";
+import {
+  createKeyToken,
+  findByRefreshToken,
+  findByUsedRefreshToken,
+  removeByUserId,
+} from "./token.service";
+import { JwtPayload } from "jsonwebtoken";
 
 const RedisCacheTTL = 120;
 
@@ -194,4 +201,68 @@ export const loginService = async ({
 export const logoutService = async (tokenStore: any) => {
   const delToken = await removeByUserId(tokenStore.userId);
   return delToken;
+};
+
+export const handleRefreshTokenService = async (refreshToken: string) => {
+  const foundToken = await findByUsedRefreshToken(refreshToken);
+  if (foundToken) {
+    const decodedUser: JwtPayload = verifyJWT(
+      refreshToken,
+      foundToken.publicKey
+    ) as JwtPayload;
+    console.log(decodedUser);
+    // Remove all tokens for forbidden tokens used
+    await removeByUserId(decodedUser.userId);
+    throw new ForbiddenErrorResponse("Something wrong! Please relogin");
+  }
+
+  const holderToken = await findByRefreshToken(refreshToken);
+  if (!holderToken) throw new AuthFailureErrorResponse("User not registered");
+
+  const decodedUser: JwtPayload = verifyJWT(
+    refreshToken,
+    holderToken.publicKey
+  ) as JwtPayload;
+  console.log(decodedUser);
+  const foundUser = await findByUsername(decodedUser.username);
+  if (!foundUser) throw new AuthFailureErrorResponse("User not registered");
+
+  // Generate public key and private key
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    modulusLength: 4096,
+    // This helps decoded back to string form to store in key token schema
+    publicKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs1",
+      format: "pem",
+    },
+  });
+
+  // Create new pair of tokens
+  const tokens = createTokenPair(
+    { userId: foundUser._id, username: foundUser.username },
+    createPublicKey(publicKey),
+    privateKey
+  );
+
+  // Update token store
+  await holderToken.updateOne({
+    $set: {
+      refreshToken: tokens.refreshToken,
+    },
+    $addToSet: {
+      usedRefreshTokens: refreshToken,
+    },
+  });
+
+  return {
+    code: "xxx",
+    metadata: {
+      user: formatResult(["_id", "username", "email"], foundUser),
+      tokens,
+    },
+  };
 };

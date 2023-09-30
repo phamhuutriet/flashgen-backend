@@ -45,3 +45,12 @@ export class NotFoundErrorResponse extends ErrorResponse {
     super(message, status);
   }
 }
+
+export class ForbiddenErrorResponse extends ErrorResponse {
+  constructor(
+    message: string = ReasonPhrases.FORBIDDEN,
+    status: number = StatusCodes.FORBIDDEN
+  ) {
+    super(message, status);
+  }
+}

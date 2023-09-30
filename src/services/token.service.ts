@@ -7,7 +7,7 @@ export const createKeyToken = async (
   refreshToken: String
 ) => {
   const filter = { userId };
-  const update = { publicKey, refreshToken };
+  const update = { publicKey, refreshToken, usedRefreshTokens: [] };
   const option = { upsert: true, new: true };
 
   const tokens = await tokenModel.findOneAndUpdate(filter, update, option);
@@ -20,4 +20,12 @@ export const findByUserId = async (userId: Types.ObjectId) => {
 
 export const removeByUserId = async (userId: Types.ObjectId) => {
   return await tokenModel.findOneAndRemove({ userId });
+};
+
+export const findByUsedRefreshToken = async (refreshToken: string) => {
+  return await tokenModel.findOne({ usedRefreshTokens: refreshToken });
+};
+
+export const findByRefreshToken = async (refreshToken: string) => {
+  return await tokenModel.findOne({ refreshToken });
 };

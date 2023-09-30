@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  handleRefreshToken,
   login,
   logout,
   postSignUp,
@@ -20,10 +21,11 @@ accessRouter.post("/user/signup", asyncHandler(preSignUp));
 accessRouter.get("/user/signup/verify-email", asyncHandler(postSignUp));
 accessRouter.get("/user/login", asyncHandler(login));
 
-// AUTHENTICATION
+// AUTHENTICATION - have to pass this in order to access services
 accessRouter.use(authentication);
 
 // APIs
 accessRouter.get("/user/logout", asyncHandler(logout));
+accessRouter.get("/user/handleRefreshToken", asyncHandler(handleRefreshToken));
 
 export default accessRouter;

@@ -1,5 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import {
+  handleRefreshTokenService,
   loginService,
   logoutService,
   postSignUpService,
@@ -37,5 +38,16 @@ export const logout = async (
   return new OKResponse({
     message: "Log out successfully !",
     metadata: await logoutService(req.tokenStore),
+  }).send(res);
+};
+
+export const handleRefreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  return new OKResponse({
+    message: "Get tokens successfully",
+    metadata: await handleRefreshTokenService(req.body.refreshToken),
   }).send(res);
 };

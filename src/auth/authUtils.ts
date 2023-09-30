@@ -70,3 +70,7 @@ export const authentication = asyncHandler(
     }
   }
 );
+
+export const verifyJWT = (token: string, keySecret: string) => {
+  return jwt.verify(token, keySecret);
+};
