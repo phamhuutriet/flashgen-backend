@@ -6,6 +6,10 @@ const COLLECTION_NAME = "Deck";
 // Declare the Schema of the Mongo model
 var deckSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      require: true,
+    },
     flashCardsList: {
       type: Array,
       default: [],
@@ -13,6 +17,10 @@ var deckSchema = new mongoose.Schema(
     isPublic: {
       type: Boolean,
       default: false,
+    },
+    tags: {
+      type: Array,
+      default: [],
     },
   },
   {

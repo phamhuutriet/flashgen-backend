@@ -2,12 +2,16 @@ import express from "express";
 import { authentication } from "../../auth/authUtils";
 import { asyncHandler } from "../../auth/checkAuth";
 import {
-  createDeck,
   createNewFlashcard,
   deleteFlashcard,
   getFlashcard,
   updateFlashcard,
-} from "../../controllers/businessLogic.controller";
+} from "../../controllers/flashcard.controller";
+import {
+  createDeck,
+  getDeck,
+  updateDeck,
+} from "../../controllers/deck.controller";
 
 const businessLogicRouter = express.Router();
 
@@ -18,6 +22,8 @@ businessLogicRouter.use(authentication);
 
 //Deck
 businessLogicRouter.post("/deck/create", asyncHandler(createDeck));
+businessLogicRouter.get("/deck/get", asyncHandler(getDeck));
+businessLogicRouter.patch("/deck/patch", asyncHandler(updateDeck));
 
 // Flashcard
 businessLogicRouter.post("/flashcard/create", asyncHandler(createNewFlashcard));

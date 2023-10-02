@@ -60,7 +60,7 @@ export const updateFlashcardService = async (flashcard: FlashCard) => {
   const foundFlashcard = await flashcardModel.findById(flashcard.id);
   if (!foundFlashcard) throw new NotFoundErrorResponse("Flashcard not found!");
 
-  await foundFlashcard.updateOne({
+  return await foundFlashcard.updateOne({
     $set: {
       question: flashcard.question,
       answer: flashcard.answer,
@@ -68,8 +68,6 @@ export const updateFlashcardService = async (flashcard: FlashCard) => {
       dueDate: flashcard.dueDate,
     },
   });
-
-  return await flashcardModel.findById(flashcard.id);
 };
 
 export const deleteFlashcardService = async (
