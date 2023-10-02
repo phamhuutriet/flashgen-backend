@@ -44,3 +44,12 @@ export const createNewFlashcardService = async (
     },
   };
 };
+
+export const getFlashcardService = async (
+  flashcardId: mongoose.Types.ObjectId
+) => {
+  const flashcard = await flashcardModel.findById(flashcardId);
+  if (!flashcard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  return flashcard;
+};
