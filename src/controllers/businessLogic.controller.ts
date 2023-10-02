@@ -4,6 +4,7 @@ import { createDeckService } from "../services/deck.service";
 import {
   createNewFlashcardService,
   getFlashcardService,
+  updateFlashcardService,
 } from "../services/flashcard.service";
 import mongoose from "mongoose";
 
@@ -30,5 +31,15 @@ export const getFlashcard: RequestHandler = async (req, res, next) => {
     metadata: await getFlashcardService(
       new mongoose.Types.ObjectId(req.query.flashcardId as string)
     ),
+  }).send(res);
+};
+
+export const updateFlashcard: RequestHandler = async (req, res, next) => {
+  const flashcard = req.body.flashcard;
+  flashcard.id = new mongoose.Types.ObjectId(flashcard.id);
+
+  return new OKResponse({
+    message: "Update flashcard successfully",
+    metadata: await updateFlashcardService(flashcard),
   }).send(res);
 };

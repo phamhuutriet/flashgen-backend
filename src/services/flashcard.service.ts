@@ -4,10 +4,12 @@ import deckModel from "../models/deck.model";
 import { NotFoundErrorResponse } from "../core/error.response";
 import { formatResult } from "./utils";
 
-type FlashCard = {
+export type FlashCard = {
+  id?: mongoose.Types.ObjectId;
   question: string;
   answer: string;
   tags: string[];
+  dueDate?: Date;
 };
 
 export const createNewFlashcardService = async (
@@ -52,4 +54,20 @@ export const getFlashcardService = async (
   if (!flashcard) throw new NotFoundErrorResponse("Flashcard not found!");
 
   return flashcard;
+};
+
+export const updateFlashcardService = async (flashcard: FlashCard) => {
+  const foundFlashcard = await flashcardModel.findById(flashcard.id);
+  if (!foundFlashcard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  await foundFlashcard.updateOne({
+    $set: {
+      question: flashcard.question,
+      answer: flashcard.answer,
+      tags: flashcard.tags,
+      dueDate: flashcard.dueDate,
+    },
+  });
+
+  return await flashcardModel.findById(flashcard.id);
 };

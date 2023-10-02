@@ -5,6 +5,7 @@ import {
   createDeck,
   createNewFlashcard,
   getFlashcard,
+  updateFlashcard,
 } from "../../controllers/businessLogic.controller";
 
 const businessLogicRouter = express.Router();
@@ -16,5 +17,6 @@ businessLogicRouter.use(authentication);
 businessLogicRouter.post("/deck/create", asyncHandler(createDeck));
 businessLogicRouter.post("/flashcard/create", asyncHandler(createNewFlashcard));
 businessLogicRouter.get("/flashcard/get", asyncHandler(getFlashcard));
+businessLogicRouter.patch("/flashcard/patch", asyncHandler(updateFlashcard));
 
 export default businessLogicRouter;
