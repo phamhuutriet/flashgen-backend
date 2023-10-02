@@ -3,6 +3,7 @@ import { CreatedResponse, OKResponse } from "../core/success.response";
 import { createDeckService } from "../services/deck.service";
 import {
   createNewFlashcardService,
+  deleteFlashcardService,
   getFlashcardService,
   updateFlashcardService,
 } from "../services/flashcard.service";
@@ -41,5 +42,14 @@ export const updateFlashcard: RequestHandler = async (req, res, next) => {
   return new OKResponse({
     message: "Update flashcard successfully",
     metadata: await updateFlashcardService(flashcard),
+  }).send(res);
+};
+
+export const deleteFlashcard: RequestHandler = async (req, res, next) => {
+  return new OKResponse({
+    message: "Delete flashcard successfully",
+    metadata: await deleteFlashcardService(
+      new mongoose.Types.ObjectId(req.query.flashcardId as string)
+    ),
   }).send(res);
 };

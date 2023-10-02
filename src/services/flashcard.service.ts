@@ -71,3 +71,12 @@ export const updateFlashcardService = async (flashcard: FlashCard) => {
 
   return await flashcardModel.findById(flashcard.id);
 };
+
+export const deleteFlashcardService = async (
+  flashcardId: mongoose.Types.ObjectId
+) => {
+  const foundFlashcard = await flashcardModel.findById(flashcardId);
+  if (!foundFlashcard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  return await foundFlashcard.deleteOne();
+};

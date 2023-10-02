@@ -4,6 +4,7 @@ import { asyncHandler } from "../../auth/checkAuth";
 import {
   createDeck,
   createNewFlashcard,
+  deleteFlashcard,
   getFlashcard,
   updateFlashcard,
 } from "../../controllers/businessLogic.controller";
@@ -14,9 +15,14 @@ const businessLogicRouter = express.Router();
 businessLogicRouter.use(authentication);
 
 // BUSINESS LOGIC API
+
+//Deck
 businessLogicRouter.post("/deck/create", asyncHandler(createDeck));
+
+// Flashcard
 businessLogicRouter.post("/flashcard/create", asyncHandler(createNewFlashcard));
 businessLogicRouter.get("/flashcard/get", asyncHandler(getFlashcard));
 businessLogicRouter.patch("/flashcard/patch", asyncHandler(updateFlashcard));
+businessLogicRouter.delete("/flashcard/delete", asyncHandler(deleteFlashcard));
 
 export default businessLogicRouter;
