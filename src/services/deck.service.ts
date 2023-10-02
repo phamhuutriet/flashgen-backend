@@ -36,3 +36,10 @@ export const updateDeckService = async (deck: Deck) => {
     },
   });
 };
+
+export const deleteDeckService = async (deckId: Types.ObjectId) => {
+  const foundDeck = await deckModel.findById(deckId);
+  if (!foundDeck) throw new NotFoundErrorResponse("Deck not found!");
+
+  return await foundDeck.deleteOne();
+};

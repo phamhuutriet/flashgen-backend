@@ -9,6 +9,7 @@ import {
 } from "../../controllers/flashcard.controller";
 import {
   createDeck,
+  deleteDeck,
   getDeck,
   updateDeck,
 } from "../../controllers/deck.controller";
@@ -24,6 +25,7 @@ businessLogicRouter.use(authentication);
 businessLogicRouter.post("/deck/create", asyncHandler(createDeck));
 businessLogicRouter.get("/deck/get", asyncHandler(getDeck));
 businessLogicRouter.patch("/deck/patch", asyncHandler(updateDeck));
+businessLogicRouter.delete("/deck/delete", asyncHandler(deleteDeck));
 
 // Flashcard
 businessLogicRouter.post("/flashcard/create", asyncHandler(createNewFlashcard));

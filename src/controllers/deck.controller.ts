@@ -3,6 +3,7 @@ import { RequestHandler } from "express";
 import { CreatedResponse, OKResponse } from "../core/success.response";
 import {
   createDeckService,
+  deleteDeckService,
   getDeckService,
   updateDeckService,
 } from "../services/deck.service";
@@ -30,5 +31,14 @@ export const updateDeck: RequestHandler = async (req, res, next) => {
   return new OKResponse({
     message: "Updated deck successfully",
     metadata: await updateDeckService(deck),
+  }).send(res);
+};
+
+export const deleteDeck: RequestHandler = async (req, res, next) => {
+  return new OKResponse({
+    message: "Delete deck successfully",
+    metadata: await deleteDeckService(
+      new Types.ObjectId(req.query.deckId as string)
+    ),
   }).send(res);
 };
