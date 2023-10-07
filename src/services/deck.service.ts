@@ -89,3 +89,38 @@ export const addCardToDeckService = async (
     updatedDeck,
   };
 };
+
+/**
+ *
+ * @param deck
+ * @param flashCardId
+ * This method remove existing flashcard from an existing deck
+ * @returns
+ */
+export const removeCardFromDeckService = async (
+  deck: Deck,
+  flashCardId: Types.ObjectId
+) => {
+  const foundDeck = await deckModel.findById(deck.id);
+  if (!foundDeck) throw new NotFoundErrorResponse("Deck not found!");
+
+  const foundFlashCard = await flashcardModel.findById(flashCardId);
+  if (!foundFlashCard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  const updatedFlashcard = await foundFlashCard.updateOne({
+    $pull: {
+      deckIds: deck.id,
+    },
+  });
+
+  const updatedDeck = await foundDeck.updateOne({
+    $pull: {
+      flashCardsList: flashCardId,
+    },
+  });
+
+  return {
+    updatedDeck,
+    updatedFlashcard,
+  };
+};

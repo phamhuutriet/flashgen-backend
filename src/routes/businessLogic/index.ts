@@ -12,6 +12,7 @@ import {
   createDeck,
   deleteDeck,
   getDeck,
+  removeCardFromDeck,
   updateDeck,
 } from "../../controllers/deck.controller";
 
@@ -28,6 +29,10 @@ businessLogicRouter.get("/deck/get", asyncHandler(getDeck));
 businessLogicRouter.patch("/deck/patch", asyncHandler(updateDeck));
 businessLogicRouter.delete("/deck/delete", asyncHandler(deleteDeck));
 businessLogicRouter.post("/deck/addCardToDeck", asyncHandler(addCardToDeck));
+businessLogicRouter.delete(
+  "/deck/removeCardFromDeck",
+  asyncHandler(removeCardFromDeck)
+);
 
 // Flashcard
 businessLogicRouter.post("/flashcard/create", asyncHandler(createNewFlashcard));

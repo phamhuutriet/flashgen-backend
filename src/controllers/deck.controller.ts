@@ -6,6 +6,7 @@ import {
   createDeckService,
   deleteDeckService,
   getDeckService,
+  removeCardFromDeckService,
   updateDeckService,
 } from "../services/deck.service";
 
@@ -48,6 +49,16 @@ export const addCardToDeck: RequestHandler = async (req, res, next) => {
   return new OKResponse({
     message: "Add card to deck successfully",
     metadata: await addCardToDeckService(
+      req.body.deck,
+      new Types.ObjectId(req.body.flashCardId)
+    ),
+  }).send(res);
+};
+
+export const removeCardFromDeck: RequestHandler = async (req, res, next) => {
+  return new OKResponse({
+    message: "Remove card from deck successfully",
+    metadata: await removeCardFromDeckService(
       req.body.deck,
       new Types.ObjectId(req.body.flashCardId)
     ),
