@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import flashcardModel from "../models/flashcard.model";
 import deckModel from "../models/deck.model";
 import { NotFoundErrorResponse } from "../core/error.response";
@@ -75,6 +75,16 @@ export const deleteFlashcardService = async (
 ) => {
   const foundFlashcard = await flashcardModel.findById(flashcardId);
   if (!foundFlashcard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  // Remove this flashcard from all decks that contain it
+  foundFlashcard.deckIds.forEach(async (deckId: Types.ObjectId) => {
+    const foundDeck = await deckModel.findById(deckId);
+    await foundDeck?.updateOne({
+      $pull: {
+        flashCardsList: flashcardId,
+      },
+    });
+  });
 
   return await foundFlashcard.deleteOne();
 };
