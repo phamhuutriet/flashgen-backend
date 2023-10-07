@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 import deckModel from "../models/deck.model";
 import { NotFoundErrorResponse } from "../core/error.response";
+import { FlashCard } from "./flashcard.service";
+import flashcardModel from "../models/flashcard.model";
 
 type Deck = {
   id?: Types.ObjectId;
@@ -42,4 +44,39 @@ export const deleteDeckService = async (deckId: Types.ObjectId) => {
   if (!foundDeck) throw new NotFoundErrorResponse("Deck not found!");
 
   return await foundDeck.deleteOne();
+};
+
+/**
+ *
+ * @param deck
+ * @param flashCard
+ * This method add existed flashcard to existed deck
+ * @returns
+ */
+export const addCardToDeckService = async (
+  deck: Deck,
+  flashCardId: Types.ObjectId
+) => {
+  const foundDeck = await deckModel.findById(deck.id);
+  if (!foundDeck) throw new NotFoundErrorResponse("Deck not found!");
+
+  const foundFlashcard = await flashcardModel.findById(flashCardId);
+  if (!foundFlashcard) throw new NotFoundErrorResponse("Flashcard not found!");
+
+  const updatedFlashcard = await foundFlashcard.updateOne({
+    $addToSet: {
+      deckId: foundDeck._id,
+    },
+  });
+
+  const updatedDeck = await foundDeck.updateOne({
+    $addToSet: {
+      flashCardsList: flashCardId,
+    },
+  });
+
+  return {
+    updatedFlashcard,
+    updatedDeck,
+  };
 };

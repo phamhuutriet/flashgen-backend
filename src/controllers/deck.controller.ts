@@ -2,6 +2,7 @@ import mongoose, { Types } from "mongoose";
 import { RequestHandler } from "express";
 import { CreatedResponse, OKResponse } from "../core/success.response";
 import {
+  addCardToDeckService,
   createDeckService,
   deleteDeckService,
   getDeckService,
@@ -39,6 +40,16 @@ export const deleteDeck: RequestHandler = async (req, res, next) => {
     message: "Delete deck successfully",
     metadata: await deleteDeckService(
       new Types.ObjectId(req.query.deckId as string)
+    ),
+  }).send(res);
+};
+
+export const addCardToDeck: RequestHandler = async (req, res, next) => {
+  return new OKResponse({
+    message: "Add card to deck successfully",
+    metadata: await addCardToDeckService(
+      req.body.deck,
+      new Types.ObjectId(req.body.flashCardId)
     ),
   }).send(res);
 };

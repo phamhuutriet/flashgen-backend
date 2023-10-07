@@ -23,8 +23,8 @@ var flashCardSchema = new mongoose.Schema(
       required: true,
     },
     deckId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      type: Array,
+      default: [],
     },
   },
   {
