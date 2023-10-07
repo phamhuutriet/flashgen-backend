@@ -1,7 +1,6 @@
 import { Types } from "mongoose";
 import deckModel from "../models/deck.model";
 import { NotFoundErrorResponse } from "../core/error.response";
-import { FlashCard } from "./flashcard.service";
 import flashcardModel from "../models/flashcard.model";
 
 type Deck = {
@@ -43,6 +42,16 @@ export const deleteDeckService = async (deckId: Types.ObjectId) => {
   const foundDeck = await deckModel.findById(deckId);
   if (!foundDeck) throw new NotFoundErrorResponse("Deck not found!");
 
+  // Remove this deckId from all flashcard that belongs to it
+  foundDeck.flashCardsList.forEach(async (flashCardId: Types.ObjectId) => {
+    const foundFlashCard = await flashcardModel.findById(flashCardId);
+    await foundFlashCard?.updateOne({
+      $pull: {
+        deckIds: deckId,
+      },
+    });
+  });
+
   return await foundDeck.deleteOne();
 };
 
@@ -65,7 +74,7 @@ export const addCardToDeckService = async (
 
   const updatedFlashcard = await foundFlashcard.updateOne({
     $addToSet: {
-      deckId: foundDeck._id,
+      deckIds: foundDeck._id,
     },
   });
 

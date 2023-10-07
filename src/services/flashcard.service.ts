@@ -25,7 +25,7 @@ export const createNewFlashcardService = async (
     question: flashcard.question,
     answer: flashcard.answer,
     tags: flashcard.tags,
-    deckId: [deckId],
+    deckIds: [deckId],
     dueDate: Date.now(),
   });
 

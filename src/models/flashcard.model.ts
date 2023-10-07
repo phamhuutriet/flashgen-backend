@@ -22,7 +22,7 @@ var flashCardSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    deckId: {
+    deckIds: {
       type: Array,
       default: [],
     },
